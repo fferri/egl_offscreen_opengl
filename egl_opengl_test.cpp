@@ -37,7 +37,9 @@
 /*
  * EGL headers.
  */
+#define EGL_EGLEXT_PROTOTYPES
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 /*
  * OpenGL headers.
@@ -77,14 +79,24 @@ int main() {
 	EGLContext context;
 	EGLSurface surface;
 	EGLint num_config;
+	static const EGLint configAttribs[] = {
+		EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+		EGL_BLUE_SIZE, 8,
+		EGL_DEPTH_SIZE, 8,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+		EGL_NONE
+	};
 
-	display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
+		(PFNEGLGETPLATFORMDISPLAYEXTPROC) eglGetProcAddress("eglGetPlatformDisplayEXT");
+
+	display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, EGL_DEFAULT_DISPLAY, 0);
 	assertEGLError("eglGetDisplay");
 	
 	eglInitialize(display, nullptr, nullptr);
 	assertEGLError("eglInitialize");
 
-	eglChooseConfig(display, nullptr, &config, 1, &num_config);
+	eglChooseConfig(display, configAttribs, &config, 1, &num_config);
 	assertEGLError("eglChooseConfig");
 	
 	eglBindAPI(EGL_OPENGL_API);
