@@ -86,6 +86,7 @@ int main() {
 		EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
 		EGL_NONE
 	};
+	static const int width = 512, height = 512;
 
 	PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
 		(PFNEGLGETPLATFORMDISPLAYEXTPROC) eglGetProcAddress("eglGetPlatformDisplayEXT");
@@ -128,7 +129,7 @@ int main() {
 	glGenTextures(1, &t);
 
 	glBindTexture(GL_TEXTURE_2D, t);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 500, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 	assertOpenGLError("glTexImage2D");
 	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -155,9 +156,9 @@ int main() {
 	/*
 	 * Read the framebuffer's color attachment and save it as a PNG file.
 	 */
-	cv::Mat image(500, 500, CV_8UC3);
+	cv::Mat image(width, height, CV_8UC3);
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	glReadPixels(0, 0, 500, 500, GL_BGR, GL_UNSIGNED_BYTE, image.data);
+	glReadPixels(0, 0, width, height, GL_BGR, GL_UNSIGNED_BYTE, image.data);
 	assertOpenGLError("glReadPixels");
 
 	cv::imwrite("img.png", image);
