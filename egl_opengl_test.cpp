@@ -44,9 +44,7 @@
 /*
  * OpenGL headers.
  */
-#define GL_GLEXT_PROTOTYPES 1
-#include <GL/gl.h>
-#include <GL/glext.h>
+#include <GL/glew.h>
 
 using namespace std;
 
@@ -112,6 +110,9 @@ int main() {
 	eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, context);
 	assertEGLError("eglMakeCurrent");
 	
+	GLenum err = glewInit();
+// 	if (GLEW_OK != err)
+// 		throw runtime_error(string("glewInit: ") + (const char*)glewGetErrorString(err));
 	
 	/*
 	 * Create an OpenGL framebuffer as render target.
