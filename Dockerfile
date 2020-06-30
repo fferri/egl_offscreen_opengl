@@ -78,12 +78,15 @@ RUN wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip \
     && ldconfig
 
 
+ENV GALLIUM_DRIVER swr
+ENV DISPLAY :99
+
 # main
-WORKDIR /usrc/src/egl
+WORKDIR /usr/src/egl
 COPY . .
 RUN make 
 
 
 VOLUME /usr/src/egl/img
 
-CMD make test_without_x11 && cp img.png img/
+CMD make test && cp img.png img/
