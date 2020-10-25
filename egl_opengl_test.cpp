@@ -37,14 +37,14 @@
 /*
  * EGL headers.
  */
+#define EGL_EGLEXT_PROTOTYPES
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 /*
  * OpenGL headers.
  */
-#define GL_GLEXT_PROTOTYPES 1
-#include <GL/gl.h>
-#include <GL/glext.h>
+#include <GL/glew.h>
 
 using namespace std;
 
@@ -77,14 +77,25 @@ int main() {
 	EGLContext context;
 	EGLSurface surface;
 	EGLint num_config;
+	static const EGLint configAttribs[] = {
+		EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+		EGL_BLUE_SIZE, 8,
+		EGL_DEPTH_SIZE, 8,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+		EGL_NONE
+	};
+	static const int width = 512, height = 512;
 
-	display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
+		(PFNEGLGETPLATFORMDISPLAYEXTPROC) eglGetProcAddress("eglGetPlatformDisplayEXT");
+
+	display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, EGL_DEFAULT_DISPLAY, 0);
 	assertEGLError("eglGetDisplay");
 	
 	eglInitialize(display, nullptr, nullptr);
 	assertEGLError("eglInitialize");
 
-	eglChooseConfig(display, nullptr, &config, 1, &num_config);
+	eglChooseConfig(display, configAttribs, &config, 1, &num_config);
 	assertEGLError("eglChooseConfig");
 	
 	eglBindAPI(EGL_OPENGL_API);
@@ -99,6 +110,9 @@ int main() {
 	eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, context);
 	assertEGLError("eglMakeCurrent");
 	
+	GLenum err = glewInit();
+// 	if (GLEW_OK != err)
+// 		throw runtime_error(string("glewInit: ") + (const char*)glewGetErrorString(err));
 	
 	/*
 	 * Create an OpenGL framebuffer as render target.
@@ -116,7 +130,7 @@ int main() {
 	glGenTextures(1, &t);
 
 	glBindTexture(GL_TEXTURE_2D, t);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 500, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 	assertOpenGLError("glTexImage2D");
 	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -143,9 +157,9 @@ int main() {
 	/*
 	 * Read the framebuffer's color attachment and save it as a PNG file.
 	 */
-	cv::Mat image(500, 500, CV_8UC3);
+	cv::Mat image(width, height, CV_8UC3);
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	glReadPixels(0, 0, 500, 500, GL_BGR, GL_UNSIGNED_BYTE, image.data);
+	glReadPixels(0, 0, width, height, GL_BGR, GL_UNSIGNED_BYTE, image.data);
 	assertOpenGLError("glReadPixels");
 
 	cv::imwrite("img.png", image);
