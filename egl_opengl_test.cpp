@@ -68,6 +68,13 @@ void assertEGLError(const std::string& msg) {
 	}
 }
 
+#define EGL_DUMP_STRING(NAME) \
+    { \
+        auto *info = eglQueryString(display, NAME); \
+        assertEGLError("eglQueryString"); \
+        std::cout << #NAME << ": " << info << std::endl; \
+    }
+
 int main() {
 	/*
 	 * EGL initialization and OpenGL context creation.
@@ -94,6 +101,11 @@ int main() {
 	
 	eglInitialize(display, nullptr, nullptr);
 	assertEGLError("eglInitialize");
+
+    EGL_DUMP_STRING(EGL_VERSION)
+    EGL_DUMP_STRING(EGL_VENDOR)
+    EGL_DUMP_STRING(EGL_CLIENT_APIS)
+    EGL_DUMP_STRING(EGL_EXTENSIONS)
 
 	eglChooseConfig(display, configAttribs, &config, 1, &num_config);
 	assertEGLError("eglChooseConfig");
